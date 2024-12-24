@@ -15,8 +15,7 @@ contract MiddleMan {
 }
 
 contract GatekeeperTwoTest is Test {
-    GatekeeperTwo instance =
-        GatekeeperTwo(vm.envAddress("GATEKEEPER_TWO_ADDRESS"));
+    GatekeeperTwo instance = GatekeeperTwo(vm.envAddress("GATEKEEPER_TWO"));
 
     function test() public {
         MiddleMan middleMan = new MiddleMan(address(instance));
