@@ -18,10 +18,12 @@ contract FallbackTest is Test {
         assertEq(fallbackTest.owner(), address(this));
 
         vm.startPrank(alice);
-        fallbackTest.contribute{value: 0.0001 ether}();
-        address(fallbackTest).call{value: .5 ether}("");
-
+        fallbackTest.contribute{value: .0001 ether}();
+        address(fallbackTest).call{value: .0001 ether}("");
         assertEq(fallbackTest.owner(), alice);
+
+        assertEq(alice.balance, .9998 ether);
         fallbackTest.withdraw();
+        assertEq(alice.balance, 1 ether);
     }
 }

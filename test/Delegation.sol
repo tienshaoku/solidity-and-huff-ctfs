@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "../src/DelegateCall.sol";
+import "../src/Delegation.sol";
 
-contract DelegateTest is Test {
+contract DelegationTest is Test {
     Delegate delegate;
     Delegation delegation;
     address alice = makeAddr("alice");
@@ -20,6 +20,7 @@ contract DelegateTest is Test {
 
         vm.startPrank(alice);
         bytes memory data = abi.encodeWithSignature("pwn()");
+        console.logBytes(data);
         address(delegation).call(data);
 
         assertEq(delegate.owner(), address(this));

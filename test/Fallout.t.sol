@@ -22,5 +22,7 @@ contract FalloutTest is Test {
         vm.startPrank(alice);
         fallout.Fal1out();
         assertEq(fallout.owner(), alice);
+
+        fallout.collectAllocations();
     }
 }

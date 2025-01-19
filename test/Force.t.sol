@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/Force.sol";
 
-contract Forcer {
+contract MiddleMan {
     function selfDestruct(address payable target) public payable {
         selfdestruct(target);
     }
@@ -12,12 +12,12 @@ contract Forcer {
 
 contract ForceTest is Test {
     Force force;
-    Forcer forcer;
+    MiddleMan middleMan;
     address alice = makeAddr("alice");
 
     function setUp() public {
         force = new Force();
-        forcer = new Forcer();
+        middleMan = new MiddleMan();
 
         vm.deal(alice, 1 ether);
     }
@@ -26,7 +26,7 @@ contract ForceTest is Test {
         assertEq(address(force).balance, 0);
 
         vm.startPrank(alice);
-        forcer.selfDestruct{value: 1 ether}(payable(address(force)));
+        middleMan.selfDestruct{value: 1 ether}(payable(address(force)));
 
         assertEq(address(force).balance, 1 ether);
     }
