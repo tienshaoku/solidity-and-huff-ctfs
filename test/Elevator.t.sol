@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/Elevator.sol";
 
-contract BuildingInstance is Building {
+contract MiddleMan is Building {
     bool counter = true;
 
     function isLastFloor(uint256) external returns (bool) {
@@ -27,8 +27,8 @@ contract ElevatorTest is Test {
     function test() public {
         assertEq(elevator.top(), false);
 
-        BuildingInstance building = new BuildingInstance();
-        building.attack(elevator);
+        MiddleMan middleMan = new MiddleMan();
+        middleMan.attack(elevator);
 
         assertEq(elevator.top(), true);
     }
