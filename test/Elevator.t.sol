@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/Elevator.sol";
 
+// inheritance + isLastFloor() returns differently each time
 contract MiddleMan is Building {
     bool counter = true;
 

