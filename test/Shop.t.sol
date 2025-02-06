@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/Shop.sol";
 
+// return price() differently
 contract MiddleMan is Buyer {
     bool public counter;
     Shop prey;
@@ -41,7 +42,5 @@ contract ShopTest is Test {
 
         assertEq(instance.isSold(), true);
         assertEq(instance.price(), 0);
-
-        console.logAddress(address(0xA9E));
     }
 }
