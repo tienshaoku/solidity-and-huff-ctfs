@@ -6,7 +6,7 @@ import "../test/CoinFlip.t.sol";
 contract CoinFlipScript is Script {
     function run() external {
         vm.startBroadcast();
-        new MiddleMan(vm.envAddress("COIN_FLIP"));
+        new MiddleMan();
         vm.stopBroadcast();
     }
 }

@@ -11,20 +11,20 @@ contract MiddleMan {
 }
 
 contract TelephoneTest is Test {
-    Telephone telephone;
+    Telephone instance;
 
     function setUp() public {
-        telephone = new Telephone();
+        instance = new Telephone();
     }
 
     function test() public {
-        assertEq(telephone.owner(), address(this));
+        assertEq(instance.owner(), address(this));
+
+        MiddleMan middleMan = new MiddleMan();
 
         address alice = makeAddr("alice");
         vm.startPrank(alice);
-        MiddleMan middleMan = new MiddleMan();
-        middleMan.attack(address(telephone));
-
-        assertEq(telephone.owner(), alice);
+        middleMan.attack(address(instance));
+        assertEq(instance.owner(), alice);
     }
 }

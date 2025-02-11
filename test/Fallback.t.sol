@@ -4,26 +4,26 @@ pragma solidity ^0.8.13;
 import {Test, console} from "forge-std/Test.sol";
 import {Fallback} from "../src/Fallback.sol";
 
+// contribute() then send ether directly
 contract FallbackTest is Test {
-    Fallback public fallbackTest;
-    address public alice = makeAddr("alice");
+    Fallback public instance;
 
     function setUp() public {
-        fallbackTest = new Fallback();
-
-        vm.deal(alice, 1 ether);
+        instance = new Fallback();
     }
 
     function test() public {
-        assertEq(fallbackTest.owner(), address(this));
+        assertEq(instance.owner(), address(this));
 
+        address alice = makeAddr("alice");
+        vm.deal(alice, 1 ether);
         vm.startPrank(alice);
-        fallbackTest.contribute{value: .0001 ether}();
-        address(fallbackTest).call{value: .0001 ether}("");
-        assertEq(fallbackTest.owner(), alice);
+        instance.contribute{value: 0.0001 ether}();
+        address(instance).call{value: 0.0001 ether}("");
+        assertEq(instance.owner(), alice);
+        assertEq(alice.balance, 0.9998 ether);
 
-        assertEq(alice.balance, .9998 ether);
-        fallbackTest.withdraw();
+        instance.withdraw();
         assertEq(alice.balance, 1 ether);
     }
 }

