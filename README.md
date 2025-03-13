@@ -4,6 +4,8 @@
 
 - Remember to `--broadcast` to send out txs when running deployment script with `forge script`
 
+- Send ether on calls: `--value <value>`, e.g. `--value 0.01ether`
+
 ### Forking with Anvil
 
 - `anvil --fork-url <rpc-url>`

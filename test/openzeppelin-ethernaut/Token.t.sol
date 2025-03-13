@@ -12,17 +12,32 @@ contract TokenTest is Test {
         instance = new Token(100);
     }
 
-    function test() public {
+    function test1() public {
         address alice = makeAddr("alice");
 
         instance.transfer(alice, 20);
         assertEq(instance.balanceOf(alice), 20);
         assertEq(instance.balanceOf(address(this)), 80);
 
-        instance.transfer(alice, 1e18);
-        assertEq(instance.balanceOf(alice), 1e18 + 20);
+        instance.transfer(alice, 81);
+        assertEq(instance.balanceOf(alice), 20 + 81);
 
-        // 80 + -(1e18 - 2^256) = (type(uint256).max + 1) (= 2^256) - 1e18 + 80
-        assertEq(instance.balanceOf(address(this)), type(uint256).max - 1e18 + 80 + 1);
+        // 80 - 81 + 2^256 = 2^256 - 1 = type(uint256).max
+        assertEq(instance.balanceOf(address(this)), type(uint256).max);
+    }
+
+    function test2() public {
+        address alice = makeAddr("alice");
+
+        instance.transfer(alice, 20);
+        assertEq(instance.balanceOf(alice), 20);
+        assertEq(instance.balanceOf(address(this)), 80);
+
+        uint256 amount = 1e18;
+        instance.transfer(alice, amount);
+        assertEq(instance.balanceOf(alice), 20 + amount);
+
+        // 80 -1e18 + 2^256 = type(uint256).max + 1 - 1e18 + 80
+        assertEq(instance.balanceOf(address(this)), type(uint256).max - amount + 80 + 1);
     }
 }

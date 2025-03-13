@@ -10,6 +10,7 @@ contract MiddleMan {
     }
 }
 
+// use selfdestruct() to force send ether to an address
 contract ForceTest is Test {
     Force force;
     MiddleMan middleMan;

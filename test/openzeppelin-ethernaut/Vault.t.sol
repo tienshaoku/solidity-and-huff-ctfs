@@ -4,9 +4,14 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Vault.sol";
 
+// use vm.load() to get storage data, private or not
 contract VaultTest is Test {
-    // Fill in the address of the vault
-    Vault vault = Vault(vm.envAddress("VAULT"));
+    Vault vault;
+    // Vault vault = Vault(vm.envAddress("VAULT"));
+
+    function setUp() public {
+        vault = new Vault(bytes32("hello"));
+    }
 
     function test() public {
         assertEq(vault.locked(), true);

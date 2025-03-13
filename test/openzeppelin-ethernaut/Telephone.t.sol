@@ -10,6 +10,7 @@ contract MiddleMan {
     }
 }
 
+// use a contract to make msg.sender != tx.origin
 contract TelephoneTest is Test {
     Telephone instance;
 

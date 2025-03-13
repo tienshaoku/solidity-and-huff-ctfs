@@ -6,9 +6,7 @@ import "test/openzeppelin-ethernaut/King.t.sol";
 contract KingScript is Script {
     function run() external {
         vm.startBroadcast();
-        // can do one of them each time to differentiate addresses
-        new MiddleMan1();
-        new MiddleMan2();
+        new MiddleMan();
         vm.stopBroadcast();
     }
 }

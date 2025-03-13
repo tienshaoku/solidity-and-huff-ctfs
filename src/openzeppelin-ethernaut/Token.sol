@@ -5,7 +5,7 @@ contract Token {
     mapping(address => uint256) balances;
     uint256 public totalSupply;
 
-    constructor(uint256 _initialSupply) public {
+    constructor(uint256 _initialSupply) {
         balances[msg.sender] = totalSupply = _initialSupply;
     }
 

