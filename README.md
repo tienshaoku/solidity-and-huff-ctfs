@@ -12,6 +12,12 @@
 
 - If running tests in forked env, remember to `--rpc-url 127.0.0.1:8545` (Anvil's default endpoint)
 
+---
+
 ## Tips
 
 - `source .env` to import secrets in command line
+
+### Specs
+
+- For test/capture-the-ether/FuzzingIdentity.t.sol, append `--gas-limit 1000000000000` to `forge test` and don't modify the file at all s.t. salt generation can be guaranteed
