@@ -9,7 +9,7 @@ contract StealEtherTest is Test {
     StealEther public instance;
 
     function setUp() public {
-        instance = StealEther(HuffDeployer.deploy("StealEther"));
+        instance = StealEther(HuffDeployer.deploy("huff-challenges/StealEther"));
     }
 
     function test() public {

@@ -9,7 +9,7 @@ contract MinimalBlockNumberTest is Test {
     MinimalBlockNumber public instance;
 
     function setUp() public {
-        instance = MinimalBlockNumber(HuffDeployer.deploy("MinimalBlockNumber"));
+        instance = MinimalBlockNumber(HuffDeployer.deploy("huff-challenges/MinimalBlockNumber"));
     }
 
     function test() public {

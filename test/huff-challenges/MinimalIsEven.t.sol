@@ -9,7 +9,7 @@ contract MinimalIsEvenTest is Test {
     MinimalIsEven public instance;
 
     function setUp() public {
-        instance = MinimalIsEven(HuffDeployer.deploy("MinimalIsEven"));
+        instance = MinimalIsEven(HuffDeployer.deploy("huff-challenges/MinimalIsEven"));
     }
 
     function test(uint256 num) public {
