@@ -1,0 +1,19 @@
+#define macro MAIN() = takes(0) returns(0) {
+    0x00 0x00 mstore
+
+    loop:
+        0x00 mload
+        dup1 calldatasize eq end jumpi
+        0x01 add 
+        dup1 0x00 mstore
+
+        calldatasize sub 
+        calldataload 0x00 byte
+        0xF8 shl
+
+        0x00 mload 0x20 add mstore
+
+        loop jump
+    end:
+        calldatasize 0x21 return
+}
