@@ -1,3 +1,11 @@
+# Solidity & Huff CTFs
+
+## Sources
+
+- `openzeppelin-ethernaut`: [The Ethernaut](https://ethernaut.openzeppelin.com/)
+- `capture-the-ether`: [Capture the Ether](https://capturetheether.com/)
+- `huff-challenges`: [Huff Discord](https://discord.com/channels/980519274600882306)
+
 ## Foundry Commands
 
 - Specify which address to use: `cast wallet address --mnemonic <mnemonic-path> --mnemonic-index <index>`
