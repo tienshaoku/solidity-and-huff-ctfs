@@ -4,9 +4,12 @@
 
 - `openzeppelin-ethernaut`: [The Ethernaut](https://ethernaut.openzeppelin.com/)
 - `capture-the-ether`: [Capture the Ether](https://capturetheether.com/)
+- `rareskills`: [RareSkills/huff-puzzles](https://github.com/RareSkills/huff-puzzles)
 - `huff-challenges`: [Huff Discord](https://discord.com/channels/980519274600882306)
 
 ## Foundry Commands
+
+- Run tests in sets: `forge test "test/<directory>/*.t.sol"`
 
 - Specify which address to use: `cast wallet address --mnemonic <mnemonic-path> --mnemonic-index <index>`
 
