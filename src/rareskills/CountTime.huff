@@ -12,7 +12,22 @@
 #define function getTimeElapsed(uint256) payable returns(uint256)
 #define function getTimeUntil(uint256) payable returns(uint256)
 
-
 #define macro MAIN() = takes(0) returns(0) {
+    0x00 calldataload 0xE0 shr
+    dup1 __FUNC_SIG(getTimeElapsed) eq getTimeElapsed jumpi
+    __FUNC_SIG(getTimeUntil) eq getTimeUntil jumpi
 
+    0x00 0x00 revert 
+
+    getTimeElapsed:
+        timestamp 0x04 calldataload gt end jumpi
+        0x04 calldataload timestamp sub
+        0x00 mstore
+    getTimeUntil:
+        timestamp 0x04 calldataload lt end jumpi 
+        timestamp 0x04 calldataload sub
+        0x00 mstore
+    end:
+
+    0x20 0x00 return
 }

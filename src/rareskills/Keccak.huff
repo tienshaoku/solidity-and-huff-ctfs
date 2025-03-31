@@ -7,7 +7,16 @@
  *  The task is to write within the `MAIN` macro below, a function that returns the keccak256 of the calldata. Should handle zero calldata
  */
 
+#define macro MAIN() = takes(0) returns(0) {
+    loop:
+        0x00 mload dup1 dup1 0x20 mul calldatasize eq end jumpi
+        0x01 add 0x00 mstore
 
- #define macro MAIN() = takes(0) returns(0) {
-    
- }
+        0x20 mul calldataload 
+        0x00 mload 0x20 mul mstore
+        loop jump
+
+    end:
+        calldatasize 0x20 sha3 0x00 mstore
+        0x20 0x00 return
+}
