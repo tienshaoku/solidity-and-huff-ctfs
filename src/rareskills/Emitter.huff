@@ -11,7 +11,19 @@
  
  #define event Value(uint256 indexed, uint256)
 
-
+// logX emits X topics: event hash & (X - 1)s indexed params
+// not indexed params should be stored on memory, instead of being consumed on stack
  #define macro MAIN() = takes(0) returns(0) {
-    
+    0x00 calldataload 0xE0 shr
+    __FUNC_SIG(value) eq value jumpi
+    0x00 0x00 revert
+
+    value:
+        0x24 calldataload 0x00 mstore
+        0x04 calldataload
+        __EVENT_HASH(Value)
+        0x20
+        0x00
+        log2
+        0x00 0x00 return
  }

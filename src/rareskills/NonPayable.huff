@@ -9,5 +9,9 @@
  */
 
 #define macro MAIN() = takes(0) returns(0) {
+    0x00 callvalue eq 0x00 eq reversion jumpi
+    0x00 0x00 return
 
+    reversion:
+        0x00 0x00 revert
 }

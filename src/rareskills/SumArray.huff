@@ -8,9 +8,25 @@
  *  NOTICE: The contract should revert when an unrecognized function is called
  */
 
+// dynamic array's calldata: func selector, offset, length
 #define function sumArray(uint256[]) payable returns(uint256)
 
-
 #define macro MAIN() = takes(0) returns(0) {
+    0x00 calldataload 0xE0 shr
+    __FUNC_SIG(sumArray) eq sumArray jumpi
+    0x00 0x00 revert
 
+    sumArray:
+        // skip func selector & offset to get length
+        0x00 mload dup1 0x24 calldataload eq end jumpi 
+        0x20 mul 0x44 add calldataload // address
+
+        0x20 mload add 
+        0x20 mstore
+
+        0x00 mload 0x01 add
+        0x00 mstore
+        sumArray jump
+    end:
+        0x20 0x20 return
 }
