@@ -6,8 +6,7 @@ import "src/openzeppelin-ethernaut/NaughtCoin.sol";
 
 contract MiddleMan {
     function attack(address prey, uint256 balance) public {
-        NaughtCoin naughtCoin = NaughtCoin(prey);
-        naughtCoin.transferFrom(msg.sender, address(this), balance);
+        NaughtCoin(prey).transferFrom(msg.sender, address(this), balance);
     }
 }
 

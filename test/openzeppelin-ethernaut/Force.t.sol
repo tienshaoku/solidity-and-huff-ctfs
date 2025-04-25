@@ -12,23 +12,23 @@ contract MiddleMan {
 
 // use selfdestruct() to force send ether to an address
 contract ForceTest is Test {
-    Force force;
+    Force instance;
     MiddleMan middleMan;
     address alice = makeAddr("alice");
 
     function setUp() public {
-        force = new Force();
+        instance = new Force();
         middleMan = new MiddleMan();
 
         vm.deal(alice, 1 ether);
     }
 
     function test() public {
-        assertEq(address(force).balance, 0);
+        assertEq(address(instance).balance, 0);
 
         vm.startPrank(alice);
-        middleMan.selfDestruct{value: 1 ether}(payable(address(force)));
+        middleMan.selfDestruct{value: 1 ether}(payable(address(instance)));
 
-        assertEq(address(force).balance, 1 ether);
+        assertEq(address(instance).balance, 1 ether);
     }
 }

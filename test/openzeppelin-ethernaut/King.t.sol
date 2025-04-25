@@ -10,24 +10,25 @@ contract MiddleMan {
     }
 }
 
+// write a contract that cannot receive ether transfer to block a new king
 contract KingTest is Test {
-    King king;
+    King instance;
 
     function setUp() public {
         vm.prank(msg.sender);
-        king = new King{value: 0.001 ether}();
+        instance = new King{value: 0.001 ether}();
     }
 
     function test() public {
-        assertEq(king.king(), msg.sender);
+        assertEq(instance.king(), msg.sender);
 
         MiddleMan middleMan = new MiddleMan();
 
         // somehow needs to transfer > the original amount in practice
-        middleMan.callKing{value: 0.002 ether}(address(king));
-        assertEq(king.king(), address(middleMan));
+        middleMan.callKing{value: 0.002 ether}(address(instance));
+        assertEq(instance.king(), address(middleMan));
 
         vm.expectRevert();
-        address(king).call{value: 0.001 ether}("");
+        address(instance).call{value: 0.001 ether}("");
     }
 }

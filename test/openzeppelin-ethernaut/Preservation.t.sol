@@ -32,6 +32,8 @@ contract PreservationTest is Test {
 
         // console.logUint(uint256(uint160(address(vm.envAddress("PRESERVATION_MIDDLEMAN")))));
         instance.setFirstTime(uint256(uint160(address(middleMan))));
+        // can also use setSecondTime as both functions modify the first slot
+        // instance.setSecondTime(uint256(uint160(address(middleMan))));
         assertEq(instance.timeZone1Library(), address(middleMan));
 
         // console.logUint(uint256(uint160(vm.envAddress("MY_ADDRESS"))));

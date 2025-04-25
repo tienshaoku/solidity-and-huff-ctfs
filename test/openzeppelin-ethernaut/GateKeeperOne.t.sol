@@ -10,28 +10,40 @@ contract MiddleMan {
     }
 }
 
+// gateTwo: force cal. gas
+// gateThree: analyse each digit as below
 contract GatekeeperOneTest is Test {
-    GatekeeperOne gatekeeperOne = GatekeeperOne(vm.envAddress("GATEKEEPER_ONE"));
+    // GatekeeperOne instance = GatekeeperOne(vm.envAddress("GATEKEEPER_ONE"));
+    GatekeeperOne instance;
+
+    function setUp() public {
+        instance = new GatekeeperOne();
+    }
 
     function test() public {
-        assertEq(gatekeeperOne.entrant(), address(0));
+        assertEq(instance.entrant(), address(0));
 
-        bytes8 gateKey = bytes8(uint64(2 ** 33 + 21124));
-        // uint32 gateKeyPartOne = uint32(uint64(gateKey));
-        // uint16 gateKeyPartTwo = uint16(uint64(gateKey));
-        // uint64 gateKeyPartThree = uint64(gateKey);
-        // uint16 gateKeyPartFour = uint16(uint160(tx.origin));
+        MiddleMan middleMan = new MiddleMan();
+        // MiddleMan middleMan = MiddleMan(vm.envAddress("GATEKEEPER_ONE_MIDDLEMAN"));
 
-        MiddleMan middleMan = MiddleMan(vm.envAddress("GATEKEEPER_ONE_MIDDLEMAN"));
-        for (uint256 i = 0; i < 1000; i++) {
-            try middleMan.enter(address(gatekeeperOne), gateKey, 81910 + i) {
-                if (gatekeeperOne.entrant() == tx.origin) {
+        // uint32(uint64(_gateKey)) == uint16(uint64(_gateKey)): 32~16 == 0
+        // uint32(uint64(_gateKey)) != uint64(_gateKey): 64~32 != 0; can add 1 to #32, i.e. 2 ** 32
+        // uint32(uint64(_gateKey)) == uint16(uint160(tx.origin)): 16~0 == tx.origin
+
+        //    64    32    16         0
+        //      != 0  == 0  tx.origin
+        bytes8 gateKey = bytes8(uint64(uint16(uint160(tx.origin))) + 2 ** 32);
+
+        for (uint256 i; i < 100000; i++) {
+            try middleMan.enter(address(instance), gateKey, i) {
+                // try middleMan.enter(address(instance), gateKey, 81910 + i) {
+                if (instance.entrant() == tx.origin) {
                     console.log("i", i);
                     break;
                 }
             } catch {}
         }
 
-        assertEq(gatekeeperOne.entrant(), tx.origin);
+        assertEq(instance.entrant(), tx.origin);
     }
 }
