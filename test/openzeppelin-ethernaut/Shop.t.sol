@@ -13,6 +13,7 @@ contract MiddleMan is Buyer {
         prey = Shop(preyAddr);
     }
 
+    // note that the interface of Buyer.price() is view and can thus not modify state
     function price() external view returns (uint256) {
         if (prey.isSold()) {
             return 0;

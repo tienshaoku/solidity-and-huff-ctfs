@@ -6,7 +6,7 @@ import "test/openzeppelin-ethernaut/Denial.t.sol";
 contract DenialScript is Script {
     function run() external {
         vm.startBroadcast();
-        new MiddleMan(payable(vm.envAddress("DENIAL")));
+        new MiddleMan();
         vm.stopBroadcast();
     }
 }
