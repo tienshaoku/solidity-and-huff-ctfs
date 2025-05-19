@@ -24,6 +24,7 @@ contract MiddleMan {
     }
 }
 
+// when the function call runs out of ether, it fails and thus won't call withdraw() again on the attacker's receive()
 contract ReentranceTest is Test {
     Reentrance reentrance;
     address alice = makeAddr("alice");
