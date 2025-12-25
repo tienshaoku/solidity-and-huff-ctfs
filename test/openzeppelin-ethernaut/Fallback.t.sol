@@ -14,16 +14,22 @@ contract FallbackTest is Test {
 
     function test() public {
         assertEq(instance.owner(), address(this));
+        assertEq(address(instance).balance, 0);
 
         address alice = makeAddr("alice");
-        vm.deal(alice, 1 ether);
+        uint256 initBalance = 1 ether;
+        vm.deal(alice, initBalance);
         vm.startPrank(alice);
-        instance.contribute{value: 0.0001 ether}();
-        address(instance).call{value: 0.0001 ether}("");
+
+        uint256 sent = 0.0001 ether;
+        instance.contribute{value: sent}();
+        address(instance).call{value: sent}("");
         assertEq(instance.owner(), alice);
-        assertEq(alice.balance, 0.9998 ether);
+        assertEq(address(instance).balance, sent * 2);
+        assertEq(alice.balance, initBalance - sent * 2);
 
         instance.withdraw();
-        assertEq(alice.balance, 1 ether);
+        assertEq(alice.balance, initBalance);
+        assertEq(address(instance).balance, 0);
     }
 }

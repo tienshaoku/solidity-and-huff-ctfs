@@ -9,7 +9,7 @@
 
 ## Foundry Commands
 
-- Run tests in sets: `forge test "test/<directory>/*.t.sol"`
+- Run tests in sets: `forge test test/<directory>/*.t.sol`
 
 - Specify which address to use: `cast wallet address --mnemonic <mnemonic-path> --mnemonic-index <index>`
 

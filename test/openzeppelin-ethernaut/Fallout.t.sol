@@ -16,7 +16,6 @@ contract FalloutTest is Test {
         assertEq(instance.owner(), address(0));
 
         address alice = makeAddr("alice");
-        vm.deal(alice, 1 ether);
         vm.startPrank(alice);
         instance.Fal1out();
         assertEq(instance.owner(), alice);
