@@ -6,7 +6,7 @@ import "test/openzeppelin-ethernaut/Reentrance.t.sol";
 contract ReentranceScript is Script {
     function run() external {
         vm.startBroadcast();
-        new MiddleMan{value: 0.001 ether}(payable(vm.envAddress("REENTRANCE")));
+        new MiddleMan();
         vm.stopBroadcast();
     }
 }
