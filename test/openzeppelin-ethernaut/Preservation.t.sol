@@ -31,15 +31,14 @@ contract PreservationTest is Test {
         MiddleMan middleMan = new MiddleMan();
 
         // console.logUint(uint256(uint160(address(vm.envAddress("PRESERVATION_MIDDLEMAN")))));
+        // can also use setSecondTime() as both functions modify the first slot
         instance.setFirstTime(uint256(uint160(address(middleMan))));
-        // can also use setSecondTime as both functions modify the first slot
-        // instance.setSecondTime(uint256(uint160(address(middleMan))));
         assertEq(instance.timeZone1Library(), address(middleMan));
 
         // console.logUint(uint256(uint160(vm.envAddress("MY_ADDRESS"))));
         // instance.setFirstTime(uint256(uint160(vm.envAddress("MY_ADDRESS"))));
         // assertEq(instance.owner(), vm.envAddress("MY_ADDRESS"));
-        instance.setFirstTime(uint256(uint160(msg.sender)));
-        assertEq(instance.owner(), msg.sender);
+        instance.setFirstTime(uint256(uint160(address(middleMan))));
+        assertEq(instance.owner(), address(middleMan));
     }
 }

