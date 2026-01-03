@@ -6,7 +6,7 @@ import "test/openzeppelin-ethernaut/Shop.t.sol";
 contract ShopScript is Script {
     function run() external {
         vm.startBroadcast();
-        new MiddleMan(vm.envAddress("SHOP"));
+        new MiddleMan();
         vm.stopBroadcast();
     }
 }
