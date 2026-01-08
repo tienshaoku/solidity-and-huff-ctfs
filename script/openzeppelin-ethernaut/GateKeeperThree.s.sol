@@ -6,7 +6,7 @@ import "test/openzeppelin-ethernaut/GateKeeperThree.t.sol";
 contract GateKeeperThreeScript is Script {
     function run() external {
         vm.startBroadcast();
-        new MiddleMan{value: 0.0011 ether}();
+        new MiddleMan();
         vm.stopBroadcast();
     }
 }
