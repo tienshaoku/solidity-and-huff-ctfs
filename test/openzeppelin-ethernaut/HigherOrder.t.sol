@@ -14,20 +14,16 @@ contract HigherOrderTest is Test {
 
     function test() public {
         assertEq(instance.commander(), address(0));
-        assertEq(instance.treasury(), 0);
 
-        bytes memory data = abi.encodeWithSignature("registerTreasury(uint8)", uint256(-1));
+        bytes memory data = abi.encodeWithSelector(
+            HigherOrder.registerTreasury.selector,
+            uint256(-1)
+        );
 
-        (bool success,) = address(instance).call(data);
+        (bool success, ) = address(instance).call(data);
         assertTrue(success);
+
         instance.claimLeadership();
-
-        // 0x211c85abffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-        assertEq(instance.treasury(), uint256(-1));
         assertEq(instance.commander(), address(this));
-
-        bytes memory data2 = abi.encodeWithSignature("whatIsTheMeaningOfLife()");
-
-        console.logBytes(data2);
     }
 }

