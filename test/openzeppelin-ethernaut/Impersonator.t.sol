@@ -4,29 +4,36 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "src/openzeppelin-ethernaut/Impersonator.sol";
 
-contract ECLockerTest is Test {
+contract ImpersonatorTest is Test {
+    Impersonator instance;
+    // source: https://sepolia.etherscan.io/address/0x9D75AF88C98C2524600f20B614ee064aE356C19C
+    bytes public signature =
+        hex"1932CB842D3E27F54F79F7BE0289437381BA2410FDEFBAE36850BEE9C41E3B9178489C64A0DB16C40EF986BECCC8F069AD5041E5B992D76FE76BBA057D9ABFF2000000000000000000000000000000000000000000000000000000000000001B";
+
+    function setUp() public {
+        instance = new Impersonator(1336);
+        instance.deployNewLock(signature);
+    }
+
     function test() public {
-        uint8 v = 27;
-        bytes32 msgHash = 0xf413212ad6f041d7bf56f97eb34b619bf39a937e1c2647ba2d306351c6d34aae;
-        bytes32 r = 0x1932cb842d3e27f54f79f7be0289437381ba2410fdefbae36850bee9c41e3b91;
-        bytes32 s = 0x78489c64a0db16c40ef986beccc8f069ad5041e5b992d76fe76bba057d9abff2;
-        // use the other s' on the same curve
-        bytes32 s2 = bytes32(
-            uint256(
-                // curve order, group size of the elliptic curve
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
-            ) - uint256(s)
+        ECLocker ecLocker = instance.lockers(0);
+        assertNotEq(ecLocker.controller(), address(0));
+
+        (bytes32 r, bytes32 s, bytes32 v) = abi.decode(
+            signature,
+            (bytes32, bytes32, bytes32)
         );
 
-        console.logBytes32(s2);
-        address _address1 = ecrecover(msgHash, v, r, s);
+        // v can be either 27 or 28
+        uint8 v2 = uint256(v) == 27 ? 28 : 27;
 
-        // since we adjust the s point, we need to adjust the v point accordingly
-        uint8 v2 = 28;
-        address _address2 = ecrecover(msgHash, v2, r, s2);
-        console.logAddress(_address1);
-        console.logAddress(_address2);
+        // source: https://std.neuromancer.sk/secg/secp256k1
+        // n: curve order, group size of the elliptic curve
+        bytes32 n = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
+        // if v changes, we also need to use the other s on the same curve n - s
+        bytes32 s2 = bytes32(uint256(n) - uint256(s));
 
-        console.logAddress(address(0));
+        ecLocker.changeController(v2, r, s2, address(0));
+        assertEq(ecLocker.controller(), address(0));
     }
 }
