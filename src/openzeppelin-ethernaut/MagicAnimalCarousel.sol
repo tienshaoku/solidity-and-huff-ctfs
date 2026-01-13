@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "forge-std/Test.sol";
-
 contract MagicAnimalCarousel {
     uint16 public constant MAX_CAPACITY = type(uint16).max;
     uint256 constant ANIMAL_MASK = uint256(type(uint80).max) << (160 + 16);
@@ -61,11 +59,5 @@ contract MagicAnimalCarousel {
     ) public pure returns (uint256) {
         require(bytes(animalName).length <= 12, AnimalNameTooLong());
         return uint256(bytes32(abi.encodePacked(animalName)) >> 160);
-    }
-
-    function encodeAnimalName2(
-        bytes32 animalName
-    ) public pure returns (uint256) {
-        return uint256(animalName) >> 160;
     }
 }
