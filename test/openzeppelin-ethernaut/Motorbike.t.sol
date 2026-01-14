@@ -2,7 +2,7 @@
 pragma experimental ABIEncoderV2;
 pragma solidity 0.6.12;
 
-import "forge-std/Test.sol";
+import "forge-std-v1.5.0/Test.sol";
 import "src/openzeppelin-ethernaut/Motorbike.sol";
 
 // 1. engine isn't called initialize() yet, and thus calling initialize() to become upgrader

@@ -1,7 +1,8 @@
 pragma experimental ABIEncoderV2;
 pragma solidity 0.6.12;
 
-import "forge-std/Script.sol";
+import "forge-std-v1.5.0/Script.sol";
+import "forge-std-v1.5.0/StdUtils.sol";
 import "test/openzeppelin-ethernaut/Motorbike.t.sol";
 
 contract MotorbikeScript is Script {
@@ -21,11 +22,11 @@ contract MotorbikeScript is Script {
         vm.startBroadcast();
         EOASolution solution = new EOASolution();
         uint64 nonce = vm.getNonce(vm.envAddress("MOTORBIKE_FACTORY"));
-        address engine = vm.computeCreateAddress(
+        address engine = StdUtils.computeCreateAddress(
             vm.envAddress("MOTORBIKE_FACTORY"),
             nonce
         );
-        address instance = vm.computeCreateAddress(
+        address instance = StdUtils.computeCreateAddress(
             vm.envAddress("MOTORBIKE_FACTORY"),
             nonce + 1
         );

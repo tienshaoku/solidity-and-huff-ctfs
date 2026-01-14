@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.0;
 
-import "forge-std/Test.sol";
+import "forge-std-v1.5.0/Test.sol";
 import "src/openzeppelin-ethernaut/Token.sol";
 
 // exploit overflow
