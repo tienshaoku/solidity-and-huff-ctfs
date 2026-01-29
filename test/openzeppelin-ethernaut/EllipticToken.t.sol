@@ -49,7 +49,7 @@ contract EllipticTokenTest is Test {
         uint8 v = 27;
         bytes memory forgedSignature = abi.encodePacked(r, s, v);
 
-        (address alice, uint256 alicePubkey) = makeAddrAndKey("alice");
+        (address alice, uint256 alicePrivateKey) = makeAddrAndKey("alice");
         uint256 amount = uint256(
             0x0e2dca4570c2694b5e898bb87fb6966b7aefffdb2d064a35a100323eeedb6a66
         );
@@ -57,7 +57,7 @@ contract EllipticTokenTest is Test {
             abi.encodePacked(ALICE, alice, amount)
         );
 
-        (v, r, s) = vm.sign(alicePubkey, permitAcceptHash);
+        (v, r, s) = vm.sign(alicePrivateKey, permitAcceptHash);
         bytes memory spenderSignature = abi.encodePacked(r, s, v);
 
         instance.permit(amount, alice, forgedSignature, spenderSignature);
